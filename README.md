@@ -37,7 +37,10 @@ Expect ~98%+ accuracy on the synthetic dataset.
 ```bash
 streamlit run dashboard.py
 ```
-The dashboard auto-trains the model on first launch if needed.
+The dashboard auto-trains the model on first launch if needed.  
+When using **Live Simulation** you can pick a grain type in the sidebar; the
+stream will then iterate through the existing rows for that grain in a fixed
+order (no random swapping between types).
 
 ### 4. Launch the API (optional, for integrations)
 ```bash

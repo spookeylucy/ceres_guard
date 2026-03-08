@@ -138,6 +138,8 @@ def predict_grain_risk(
 
     Returns:
         dict with keys: scenario, risk_level, threat_type, color, confidence
+            (for backward compatibility the older keys ``level`` and ``threat``
+            are also preserved).
     """
     if model is None or encoder is None:
         if not os.path.exists(MODEL_PATH):
@@ -154,6 +156,13 @@ def predict_grain_risk(
     confidence = float(max(proba)) * 100
 
     result = RISK_MAP[scenario].copy()
+    # RISK_MAP entries use shorter keys for internal logic ("level"/"threat").
+    # callers across the app expect ``risk_level`` and ``threat_type`` so
+    # provide those as well (and keep the originals for backwards
+    # compatibility).
+    result["risk_level"] = result.get("level")
+    result["threat_type"] = result.get("threat")
+
     result["scenario"]   = scenario
     result["confidence"] = round(confidence, 1)
     result["inputs"]     = {

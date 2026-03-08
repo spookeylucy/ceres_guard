@@ -236,7 +236,11 @@ with st.sidebar:
         label = scen.replace("_", "/")
         st.markdown(f'<div style="font-size:0.7rem;color:rgba(232,237,228,0.6);display:flex;justify-content:space-between;padding:0.15rem 0;"><span>{label}</span><span style="color:var(--harvest);">{count}</span></div>', unsafe_allow_html=True)
 
-    st.markdown(f'<div style="font-size:0.65rem;color:rgba(232,237,228,0.3);margin-top:0.6rem;">Total: {len(sim_df)} rows</div>', unsafe_allow_html=True)
+    total_rows = len(sim_df)
+    grain_rows = len(sim_df[sim_df["grain_type"] == grain_type]) if grain_type else total_rows
+    st.markdown(f'<div style="font-size:0.65rem;color:rgba(232,237,228,0.3);margin-top:0.6rem;">Total: {total_rows} rows</div>', unsafe_allow_html=True)
+    if grain_type:
+        st.markdown(f'<div style="font-size:0.65rem;color:rgba(232,237,228,0.3);">{grain_type}: {grain_rows} rows</div>', unsafe_allow_html=True)
 
 
 # ── Main Content ──────────────────────────────────────────────────────────
@@ -412,6 +416,13 @@ if "Simulation" in mode:
             st.session_state.history = []
             st.session_state.last_pred = None
 
+    # whenever grain_type changes, restart the simulation to keep it focused
+    if "sim_grain" not in st.session_state or st.session_state.sim_grain != grain_type:
+        st.session_state.sim_grain = grain_type
+        st.session_state.sim_index = 0
+        st.session_state.history = []
+        st.session_state.last_pred = None
+
     sim_speed = st.slider("Simulation speed (seconds per reading)", 0.5, 5.0, 1.5, 0.5)
 
     st.markdown('<hr class="grain-divider">', unsafe_allow_html=True)
@@ -421,11 +432,13 @@ if "Simulation" in mode:
     log_placeholder        = st.empty()
 
     def run_one_step():
-        idx = st.session_state.sim_index % len(sim_df)
-        row = sim_df.iloc[idx]
-
-        # Override grain_type from sidebar if desired
-        g = grain_type if grain_type else str(row["grain_type"])
+        # filter rows by currently selected grain; keep deterministic order
+        filtered = sim_df[sim_df["grain_type"] == grain_type]
+        if filtered.empty:
+            # fallback to whole dataset if something went wrong
+            filtered = sim_df
+        idx = st.session_state.sim_index % len(filtered)
+        row = filtered.iloc[idx]
 
         pred = predict_grain_risk(
             grain_type=str(row["grain_type"]),
