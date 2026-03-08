@@ -82,12 +82,18 @@ API docs available at: http://localhost:8000/docs
 2. Send a message to your bot, then visit:
    `https://api.telegram.org/bot<TOKEN>/getUpdates`
    Copy the `chat.id` value.
-3. Edit `alerts.py`:
-   ```python
-   TELEGRAM_BOT_TOKEN = "1234567890:ABCdef..."
-   TELEGRAM_CHAT_ID   = "987654321"
-   ```
-4. Enable the toggle in the dashboard sidebar.
+3. **(New)** You no longer need to edit `alerts.py` directly.
+   Instead, launch the **dashboard**, open the sidebar and make sure the
+   **Send alerts to phone** toggle is on. Two new fields will appear:
+   * **Bot token** – paste the value from BotFather.
+   * **Chat ID** – numeric ID from the `/getUpdates` response.
+   These are stored in Streamlit session state and used by the running app.
+4. When the toggle is enabled and both credentials are filled, any non‑safe
+   prediction will trigger a message to your Telegram account (or group).
+
+   If you prefer to configure statically, you can still set
+   `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `alerts.py` as before,
+   but the dashboard inputs offer a quicker workflow.
 
 ---
 
